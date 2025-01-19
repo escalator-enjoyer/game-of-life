@@ -5,8 +5,10 @@
 - Travel: 0.5% chance for a cell to travel in a random direction
 - Replication: 5% chance for a cell to duplicate regardless of neighbors
 - Lone Survival: 10% chance for a cell to survive and attempt to immediately replicate 4 times if it has no neighbors
-- Betrayal: 0.5% chance for a cell to betray its team and turn into the opposite color.
+- Betrayal: 0.5% chance for a cell to betray its team and turn into the opposite color if the clump* size is 5 or less
 - Miracle: 0.01% chance for a dead cell to come alive if it does not have any neighbors 
+
+*clumps are groups of neighboring living cells (area of any solid shape)
 
 ## Features
 - 50x50 grid with zooming/panning
