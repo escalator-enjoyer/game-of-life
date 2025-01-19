@@ -1,6 +1,14 @@
 # game-of-life
  Conway's Game of Life with some modifications.
-## Includes:
+
+## Modifications
+- Travel: 0.5% chance for a cell to travel in a random direction
+- Replication: 5% chance for a cell to duplicate regardless of neighbors
+- Lone Survival: 10% chance for a cell to survive and attempt to immediately replicate 4 times if it has no neighbors
+- Betrayal: 0.5% chance for a cell to betray its team and turn into the opposite color.
+- Miracle: 0.01% chance for a dead cell to come alive if it does not have any neighbors 
+
+## Features
 - 50x50 grid with zooming/panning
 - Cells can be in one of 2 teams (pink & orange)
 - Graphs each team's population ratio

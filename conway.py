@@ -119,8 +119,8 @@ class Grid:
             dominant_team = neighbor_teams[0]
           # Cell is alive sparkle emoji
           new_cells[(x, y)] = Cell(x, y, True, dominant_team)
-        # 0.01% chance of miracle
-        elif miracle and live_neighbors == 0 and random.random() <= 0.0001:
+        # Miracle (0.001%)
+        elif miracle and live_neighbors == 0 and random.random() <= 0.00001:
           dominant_team = random.choice(teams)
           [self.random_duplicate(x, y, dominant_team) for _ in range(4)]
     
@@ -139,6 +139,7 @@ class Grid:
         neighbor.team = team
         break
   
+  # The voyager
   def random_travel(self, x, y, team):
     directions = [(dx, dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1) if (dx != 0 or dy != 0)]
     dx, dy = random.choice(directions)
@@ -155,7 +156,7 @@ class Grid:
       for dy in (-1, 0, 1):
         if dx == 0 and dy == 0:
           continue
-        neighbor = self.cells.get((x + dx, y + dy))
+        neighbor = self.get_cell(x + dx, y + dy)
         if neighbor and neighbor.alive:
           count += 1
     return count
@@ -166,7 +167,7 @@ class Grid:
       for dy in (-1, 0, 1):
         if dx == 0 and dy == 0:
           continue
-        neighbor = self.cells.get((x + dx, y + dy))
+        neighbor = self.get_cell(x + dx, y + dy)
         if neighbor and neighbor.alive:
           teams.append(neighbor.team)
     return teams
@@ -331,7 +332,6 @@ while running:
       WIDTH, HEIGHT = event.size
       screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 
-  # Update game logic (Grid) at 10 FPS
   if current_time - last_logic_update >= 1000 / FPS_LOGIC:
     if not paused:
       grid.update()
@@ -341,7 +341,6 @@ while running:
         history.pop(0)
     last_logic_update = current_time
 
-  # Rendering (Display) at 60 FPS
   screen.fill(colors['black'])
 
   outline_rect = pygame.Rect(offset_x, offset_y, grid_pixel_width, grid_pixel_height)
