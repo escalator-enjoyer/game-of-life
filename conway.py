@@ -5,18 +5,24 @@ WIDTH, HEIGHT = 800, 600
 FPS_DISPLAY = 60
 FPS_LOGIC = 15
 
-travel = True
-replication = True
-lone_survival = True
-betrayal = True
-miracle = True
+# Chances are in %
+travel = False
+travel_chance = 2.5
+replication = False
+replication_chance = 5
+lone_survival = False
+lone_survival_chance = 10
+betrayal = False
+betrayal_chance = 0.5
+miracle = False
+miracle_chance = 0.01
 grid_width, grid_height = 50, 50
 
 colors = {
-  'black': (19, 19, 19),
+  'black': (20, 20, 20),
   'gray': (80, 80, 80),
-  'white': (236, 236, 236),
-  'pink': (247, 140, 255),
+  'white': (230, 230, 230),
+  'pink': (250, 140, 255),
   'orange': (255, 200, 140)
 }
 
@@ -38,8 +44,11 @@ class Cell:
     self.team = team
 
   def toggle(self, team):
-    self.alive = not self.alive
-    self.team = team
+    if not self.alive or self.team == team:
+      self.alive = not self.alive
+      self.team = team
+    else:
+      self.team = team
 
   def convert(self, team):
     self.team = team
@@ -90,22 +99,22 @@ class Grid:
           new_cells[(x, y)] = Cell(x, y, True, cell.team)
         
         # Betrayal (0.5%)
-        if betrayal and random.random() <= 0.005 and self.calculate_clump_size(x, y) <= 5:
+        if betrayal and random.random() <= betrayal_chance/100 and self.calculate_clump_size(x, y) <= 5:
           new_cells[(x, y)] = Cell(x, y, True, 'orange' if cell.team == 'pink' else 'pink')
 
         # Travel (0.5%)
-        if travel and random.random() <= 0.005:
+        if travel and random.random() <= travel_chance/100:
           self.random_travel(x, y, cell.team)
         
         # Chance to replicate regardless of neighbors
-        if replication and random.random() <= 0.05:
+        if replication and random.random() <= replication_chance/100:
           self.random_duplicate(x, y, cell.team)
         
         if not live_neighbors in (2, 3):
           # Replication and survival if alone
-          if lone_survival and live_neighbors == 0 and random.random() <= 0.1:
+          if lone_survival and live_neighbors == 0 and random.random() <= lone_survival_chance/100:
             new_cells[(x, y)] = Cell(x, y, True, cell.team)
-            [self.random_duplicate(x, y, cell.team) for _ in range(4)]
+            [self.random_duplicate(x, y, cell.team) for _ in range(10)]
           else:
             # Normal cog death through under- or overpopulation (neighbors < 2 or neighbors > 3)
             new_cells[(x, y)] = Cell(x, y, False)
@@ -119,10 +128,10 @@ class Grid:
             dominant_team = neighbor_teams[0]
           # Cell is alive sparkle emoji
           new_cells[(x, y)] = Cell(x, y, True, dominant_team)
-        # Miracle (0.001%)
-        elif miracle and live_neighbors == 0 and random.random() <= 0.00001:
+        # Miracle (miracleChance%)
+        elif miracle and live_neighbors == 0 and random.random() <= miracle_chance/100:
           dominant_team = random.choice(teams)
-          [self.random_duplicate(x, y, dominant_team) for _ in range(4)]
+          [self.random_duplicate(x, y, dominant_team) for _ in range(10)]
     
     self.cells = {pos: cell for pos, cell in new_cells.items() if cell.alive}
     self.total_pinks = sum([1 for cell in self.cells.values() if cell.team == 'pink' and cell.alive])
