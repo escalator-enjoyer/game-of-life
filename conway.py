@@ -2,7 +2,7 @@ import pygame
 import random
 
 WIDTH, HEIGHT = 800, 600
-FPS_DISPLAY = 60
+FPS_DISPLAY = 10000
 FPS_LOGIC = 15
 
 # Chances are in %
@@ -79,6 +79,12 @@ class Grid:
     if cell:
       cell.toggle(team)
 
+  def paint_cell(self, x, y, team):
+    cell = self.get_cell(x, y)
+    if cell:
+      cell.alive = True
+      cell.team = team
+
   def update(self):
     new_cells = {}
     to_check = set((x, y) for x in range(grid_width) for y in range(grid_height))
@@ -98,11 +104,11 @@ class Grid:
         if live_neighbors in (2, 3):
           new_cells[(x, y)] = Cell(x, y, True, cell.team)
         
-        # Betrayal (0.5%)
+        # Betrayal
         if betrayal and random.random() <= betrayal_chance/100 and self.calculate_clump_size(x, y) <= 5:
           new_cells[(x, y)] = Cell(x, y, True, 'orange' if cell.team == 'pink' else 'pink')
 
-        # Travel (0.5%)
+        # Travel
         if travel and random.random() <= travel_chance/100:
           self.random_travel(x, y, cell.team)
         
@@ -119,7 +125,7 @@ class Grid:
             # Normal cog death through under- or overpopulation (neighbors < 2 or neighbors > 3)
             new_cells[(x, y)] = Cell(x, y, False)
       else:
-        # Select the team for the replicated cell, 1% chance of creation of life
+        # Select the team for the replicated cell & miracle up
         if live_neighbors == 3:
           if len(neighbor_teams) > 1:
             # 50/50 between each team to select winner
@@ -128,7 +134,7 @@ class Grid:
             dominant_team = neighbor_teams[0]
           # Cell is alive sparkle emoji
           new_cells[(x, y)] = Cell(x, y, True, dominant_team)
-        # Miracle (miracleChance%)
+        # Miracle
         elif miracle and live_neighbors == 0 and random.random() <= miracle_chance/100:
           dominant_team = random.choice(teams)
           [self.random_duplicate(x, y, dominant_team) for _ in range(10)]
@@ -203,6 +209,8 @@ class Grid:
     for cell in self.cells.values():
       cell.draw(surface, cell_size, offset_x, offset_y)
 
+paintbrush = False
+
 def draw_ui(active_color, pct_pinks, pct_oranges):
   rect_width, rect_height = 210, 440
   rect_x, rect_y = 10, 10
@@ -227,6 +235,7 @@ def draw_ui(active_color, pct_pinks, pct_oranges):
     font.render(f"U: Lone Survival ({'On' if lone_survival else 'Off'})", True, colors['white']),
     font.render(f"I: Betrayal ({'On' if betrayal else 'Off'})", True, colors['white']),
     font.render(f"O: Miracle ({'On' if miracle else 'Off'})", True, colors['white']),
+    font.render(f"P: Paintbrush ({'On' if paintbrush else 'Off'})", True, colors['white']),
     font.render(f"Pink: {pct_pinks:.2f}%", True, colors['pink']),
     font.render(f"Orange: {pct_oranges:.2f}%", True, colors['orange']),
   ]
@@ -315,25 +324,20 @@ while running:
         betrayal = not betrayal
       elif event.key == pygame.K_o:
         miracle = not miracle
+      elif event.key == pygame.K_p:
+        paintbrush = not paintbrush
     elif event.type == pygame.MOUSEBUTTONDOWN:
       if event.button == 1:
         mouse_x, mouse_y = event.pos
         grid_x = (mouse_x - offset_x) // cell_size
         grid_y = (mouse_y - offset_y) // cell_size
         grid.toggle_cell(grid_x, grid_y, team=active_color)
-      elif event.button == 4:
-        cell_size = min(cell_size + 1, 50)
-        grid_pixel_width = grid_width * cell_size
-        grid_pixel_height = grid_height * cell_size
-        offset_x = (WIDTH - grid_pixel_width) // 2 + 110
-        offset_y = (HEIGHT - grid_pixel_height) // 2
-      elif event.button == 5:
-        cell_size = max(cell_size - 1, 2)
-        grid_pixel_width = grid_width * cell_size
-        grid_pixel_height = grid_height * cell_size
-        offset_x = (WIDTH - grid_pixel_width) // 2 + 110
-        offset_y = (HEIGHT - grid_pixel_height) // 2
     elif event.type == pygame.MOUSEMOTION:
+      if event.buttons[0] and paintbrush:
+        mouse_x, mouse_y = event.pos
+        grid_x = (mouse_x - offset_x) // cell_size
+        grid_y = (mouse_y - offset_y) // cell_size
+        grid.paint_cell(grid_x, grid_y, team=active_color)
       if event.buttons[2]:
         offset_x += event.rel[0]
         offset_y += event.rel[1]
