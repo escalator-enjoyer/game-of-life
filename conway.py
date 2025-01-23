@@ -1,7 +1,9 @@
 import pygame
 import random
+import sys
+import random
 
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 960, 720
 FPS_DISPLAY = 10000
 FPS_LOGIC = 15
 
@@ -212,7 +214,7 @@ class Grid:
 paintbrush = False
 
 def draw_ui(active_color, pct_pinks, pct_oranges):
-  rect_width, rect_height = 210, 440
+  rect_width, rect_height = 210, 470
   rect_x, rect_y = 10, 10
   pygame.draw.rect(screen, colors[active_color], (rect_x - 2, rect_y - 2, rect_width + 4, rect_height + 4), 2)
   pygame.draw.rect(screen, colors['black'], (rect_x, rect_y, rect_width, rect_height))
@@ -255,6 +257,7 @@ def draw_ui(active_color, pct_pinks, pct_oranges):
   screen.blit(instructions[12], (rect_x + 10, rect_y + 340))
   screen.blit(instructions[13], (rect_x + 10, rect_y + 370))
   screen.blit(instructions[14], (rect_x + 10, rect_y + 400))
+  screen.blit(instructions[15], (rect_x + 10, rect_y + 430))
 
 def calculate_coverage(pinks, oranges):
   total_cells = grid_width * grid_height
@@ -272,7 +275,7 @@ def calculate_coverage(pinks, oranges):
 
 def draw_graph(history):
   graph_width, graph_height = 210, 100
-  graph_x, graph_y = 10, 460
+  graph_x, graph_y = 10, 490
   pygame.draw.rect(screen, colors['black'], (graph_x, graph_y, graph_width, graph_height))
 
   if len(history) > 1:
@@ -332,6 +335,18 @@ while running:
         grid_x = (mouse_x - offset_x) // cell_size
         grid_y = (mouse_y - offset_y) // cell_size
         grid.toggle_cell(grid_x, grid_y, team=active_color)
+      elif event.button == 4:
+        cell_size = min(cell_size + 1, 50)
+        grid_pixel_width = grid_width * cell_size
+        grid_pixel_height = grid_height * cell_size
+        offset_x = (WIDTH - grid_pixel_width) // 2 + 110
+        offset_y = (HEIGHT - grid_pixel_height) // 2
+      elif event.button == 5:
+        cell_size = max(cell_size - 1, 2)
+        grid_pixel_width = grid_width * cell_size
+        grid_pixel_height = grid_height * cell_size
+        offset_x = (WIDTH - grid_pixel_width) // 2 + 110
+        offset_y = (HEIGHT - grid_pixel_height) // 2
     elif event.type == pygame.MOUSEMOTION:
       if event.buttons[0] and paintbrush:
         mouse_x, mouse_y = event.pos
